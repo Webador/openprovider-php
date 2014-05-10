@@ -1,0 +1,19 @@
+{
+    "name": "roelvanduijnhoven/openprovider-php",
+    "type": "library",
+    "description": "PHP interface to OpenProvider API",
+    "require": {
+        "php": ">=5.2.4"
+    },
+    "authors": [
+        {
+            "name": "Roel van Duijnhoven",
+            "email": "roel.duijnhoven@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-0" : {
+            "OP_" : "src/"
+        }
+    }
+}
