@@ -7,6 +7,8 @@ class OP_Reply
     protected $value = array();
     protected $warnings = array();
     protected $raw = null;
+    protected $dom = null;
+    protected $filters = [];
     protected $maintenance = null;
 
     public function __construct ($str = null) {
@@ -15,7 +17,7 @@ class OP_Reply
             $this->_parseReply($str);
         }
     }
-    protected function _parseReply ($str = "")
+    protected function _parseReply ($str = '')
     {
         $dom = new DOMDocument;
         $result = $dom->loadXML(trim($str));
@@ -24,10 +26,10 @@ class OP_Reply
         }
 
         $arr = OP_API::convertXmlToPhpObj($dom->documentElement);
-        if ((!is_array($arr) && trim($arr) == "") ||
+        if ((!is_array($arr) && trim($arr) == '') ||
             $arr['reply']['code'] == 4005)
         {
-            throw new OP_API_Exception("API is temprorarily unavailable due to maintenance", 4005);
+            throw new OP_API_Exception("API is temporarily unavailable due to maintenance", 4005);
         }
 
         $this->faultCode = (int) $arr['reply']['code'];
@@ -39,6 +41,10 @@ class OP_Reply
         if (isset($arr['reply']['maintenance'])) {
             $this->maintenance = $arr['reply']['maintenance'];
         }
+    }
+    public function encode ($str)
+    {
+        return OP_API::encode($str);
     }
     public function setFaultCode ($v)
     {
@@ -64,6 +70,10 @@ class OP_Reply
         $this->warnings = $v;
         return $this;
     }
+    public function getDom ()
+    {
+        return $this->dom;
+    }
     public function getWarnings ()
     {
         return $this->warnings;
@@ -86,6 +96,10 @@ class OP_Reply
         }
         return $this->raw;
     }
+    public function addFilter($filter)
+    {
+        $this->filters[] = $filter;
+    }
     public function _getReply ()
     {
         $dom = new DOMDocument('1.0', OP_API::$encoding);
@@ -106,6 +120,10 @@ class OP_Reply
         if (sfConfig::get("app_system_maintenance")) {
             $maintenanceNode = $replyNode->appendChild($dom->createElement('maintenance'));
             $maintenanceNode->appendChild($dom->createTextNode(1));
+        }
+        $this->dom = $dom;
+        foreach ($this->filters as $f) {
+            $f->filter($this);
         }
         return $dom->saveXML();
     }

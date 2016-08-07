@@ -7,7 +7,7 @@ class OP_API
     protected $timeout = null;
     protected $debug = null;
     static public $encoding = 'UTF-8';
-    public function __construct ($url, $timeout = 1000)
+    public function __construct ($url = null, $timeout = 1000)
     {
         $this->url = $url;
         $this->timeout = $timeout;
@@ -46,20 +46,71 @@ class OP_API
         }
         return new OP_Reply($str);
     }
+    /**
+     * Check if xml was created successfully with $str
+     * @param $str string
+     * @return boolean
+     */
+    static function checkCreateXml($str)
+    {
+        $dom = new DOMDocument;
+        $dom->encoding = 'utf-8';
+
+        $textNode = $dom->createTextNode($str);
+
+        if (!$textNode) {
+            return false;
+        }
+
+        $element = $dom->createElement('element')
+            ->appendChild($textNode);
+
+        if (!$element) {
+            return false;
+        }
+
+        @$dom->appendChild($element);
+
+        $xml = $dom->saveXML();
+
+        return !empty($xml);
+    }
     static function encode ($str)
     {
         $ret = @htmlentities($str, null, OP_API::$encoding);
         // Ticket #18 "Encoding issues when parsing XML"
         // Some tables have data stored in two encodings
         if (strlen($str) && !strlen($ret)) {
+            error_log('ISO charset date = '.date('d.m.Y H:i:s').',STR = ' . $str . ', debug = ' . var_export(
+                    apiDebugHelper::getCallStack(["level" => 10]), true
+                ), 1, 'vsaveliev@openprovider.nl');
             $str = iconv('ISO-8859-1', 'UTF-8', $str);
-            $ret = htmlentities($str, null, OP_API::$encoding);
         }
-        return $ret;
+
+        if (!empty($str) && is_object($str)) {
+            error_log('Exception convertPhpObjToDom date = '.date('d.m.Y H:i:s').', object class = ' . get_class($str) . ', debug = ' . var_export(
+                    apiDebugHelper::getCallStack(["level" => 10]), true
+                ), 1, 'vsaveliev@openprovider.nl');
+
+            if (method_exists($str , '__toString')) {
+                $str = $str->__toString();
+            } else {
+                return $str;
+            }
+        }
+
+        if (!empty($str) && is_string($str) && !self::checkCreateXml($str)) {
+            error_log('Exception convertPhpObjToDom date = '.date('d.m.Y H:i:s').', STR = ' . $str . ', debug = ' . var_export(
+                    apiDebugHelper::getCallStack(["level" => 10]), true
+                ), 1, 'vsaveliev@openprovider.nl');
+
+            $str = htmlentities($str, null, OP_API::$encoding);
+        }
+        return $str;
     }
     static function decode ($str)
     {
-        return html_entity_decode($str, null, OP_API::$encoding);
+        return $str;
     }
     static function createRequest ($xmlStr = null)
     {
@@ -161,7 +212,7 @@ class OP_API
                     self::convertPhpObjToDom($val, $new, $dom);
                 }
             }
-        } else {
+        } elseif (!is_object($arr)) {
             $node->appendChild($dom->createTextNode(self::encode($arr)));
         }
     }

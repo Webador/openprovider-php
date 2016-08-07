@@ -11,12 +11,51 @@ class OP_Request
     protected $ip = null;
     protected $language = null;
     protected $raw = null;
+    protected $dom = null;
     protected $misc = null;
-    public function __construct ($str = null) {
+    protected $filters = [];
+    public function __construct ($str = null)
+    {
         if ($str) {
-            $this->raw = $str;
-            $this->_parseRequest($str);
+            $this->setContent($str);
         }
+    }
+    public function addFilter($filter)
+    {
+        $this->filters[] = $filter;
+    }
+    public function setContent($str)
+    {
+        $this->raw = $str;
+    }
+    protected function initDom()
+    {
+        if ($this->raw) {
+            $this->dom = new DOMDocument;
+            $this->dom->loadXML($this->raw, LIBXML_NOBLANKS);
+        }
+    }
+    public function getDom()
+    {
+        if (!$this->dom) {
+            $this->initDom();
+        }
+        return $this->dom;
+    }
+    protected function setDom($dom)
+    {
+        $this->dom = $dom;
+    }
+    public function parseContent()
+    {
+        $this->initDom();
+        if (!$this->dom) {
+            return;
+        }
+        foreach ($this->filters as $f) {
+            $f->filter($this);
+        }
+        $this->_retrieveDataFromDom($this->dom);
     }
     /*
      * Parse request string to assign object properties with command name and
@@ -26,10 +65,8 @@ class OP_Request
      *
      * @uses OP_Request::__construct()
      */
-    protected function _parseRequest ($str = "")
+    protected function _retrieveDataFromDom ($dom)
     {
-        $dom = new DOMDocument;
-        $dom->loadXML($str, LIBXML_NOBLANKS);
         $arr = OP_API::convertXmlToPhpObj($dom->documentElement);
         list($dummy, $credentials) = each($arr);
         list($this->cmd, $this->args) = each($arr);
