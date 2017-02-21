@@ -117,10 +117,6 @@ class OP_Reply
             $warningsNode = $replyNode->appendChild($dom->createElement('warnings'));
             OP_API::convertPhpObjToDom($this->warnings, $warningsNode, $dom);
         }
-        if (sfConfig::get("app_system_maintenance")) {
-            $maintenanceNode = $replyNode->appendChild($dom->createElement('maintenance'));
-            $maintenanceNode->appendChild($dom->createTextNode(1));
-        }
         $this->dom = $dom;
         foreach ($this->filters as $f) {
             $f->filter($this);
