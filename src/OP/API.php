@@ -162,7 +162,7 @@ class OP_API
                 }
             }
         }
-        return 0 < count($ret) ? $ret : null;
+        return !empty($ret) ? $ret : null;
     }
     // parse array
     protected static function parseArray ($node)
