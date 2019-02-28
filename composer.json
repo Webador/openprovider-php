@@ -1,5 +1,5 @@
 {
-    "name": "roelvanduijnhoven/openprovider-php",
+    "name": "jouwweb/openprovider-php",
     "type": "library",
     "description": "PHP interface to OpenProvider API",
     "require": {
