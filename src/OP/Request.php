@@ -32,7 +32,10 @@ class OP_Request
     {
         if ($this->raw) {
             $this->dom = new DOMDocument;
-            $this->dom->loadXML($this->raw, LIBXML_NOBLANKS);
+            $result = @$this->dom->loadXML($this->raw, LIBXML_NOBLANKS);
+            if ($result === false) {
+                throw new OP_API_Exception("API response could not be parsed as XML");
+            }
         }
     }
     public function getDom()

@@ -26,10 +26,17 @@ class OP_Reply
         }
 
         $arr = OP_API::convertXmlToPhpObj($dom->documentElement);
-        if ((!is_array($arr) && trim($arr) == '') ||
-            $arr['reply']['code'] == 4005)
-        {
+
+        if (!is_array($arr) || !array_key_exists('reply', $arr)) {
+            throw new OP_API_Exception(sprintf("Could not interpret response: %s", (string)$arr));
+        }
+
+        if (isset($arr['reply']['code']) && $arr['reply']['code'] == 4005) {
             throw new OP_API_Exception("API is temporarily unavailable due to maintenance", 4005);
+        }
+
+        if (!array_key_exists('code', $arr['reply']) || !array_key_exists('desc', $arr['reply']) || !array_key_exists('data', $arr['reply'])) {
+            throw new OP_API_Exception(sprintf("Could not interpret response, missing mandatory fields. Response: %s", print_r($arr, true)));
         }
 
         $this->faultCode = (int) $arr['reply']['code'];
@@ -38,8 +45,9 @@ class OP_Reply
         if (isset($arr['reply']['warnings'])) {
             $this->warnings = $arr['reply']['warnings'];
         }
+
         if (isset($arr['reply']['maintenance'])) {
-            $this->maintenance = $arr['reply']['maintenance'];
+            throw new OP_API_Exception("API is temporarily unavailable due to maintenance", 4005);
         }
     }
     public function encode ($str)

@@ -1,7 +1,8 @@
 PHP interface to OpenProvider API
 =================================
 
-This package contains a small PHP interface to make use of the OpenProvider API (https://doc.openprovider.eu/index.php/Main_Page).
+**Please don't use this. This is a copy [of the sample code shown here](https://doc.openprovider.eu/index.php/Main_Page).
+But quality is very low.**
 
 The files as found in this package are almost identical to the ones as distributed by OpenProvider. So why bother
 creating a package for it? The __distribution__ of OpenProvider consists of a single file and does not make use
