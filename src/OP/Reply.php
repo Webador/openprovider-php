@@ -27,7 +27,7 @@ class OP_Reply
 
         $arr = OP_API::convertXmlToPhpObj($dom->documentElement);
 
-        if (!is_array($arr) || !array_key_exists('reply', $arr)) {
+        if (!is_array($arr)) {
             throw new OP_API_Exception(sprintf("Could not interpret response: %s", (string)$arr));
         }
 
@@ -35,7 +35,11 @@ class OP_Reply
             throw new OP_API_Exception("API is temporarily unavailable due to maintenance", 4005);
         }
 
-        if (!array_key_exists('code', $arr['reply']) || !array_key_exists('desc', $arr['reply']) || !array_key_exists('data', $arr['reply'])) {
+        if (!array_key_exists('reply', $arr)
+         || !array_key_exists('code', $arr['reply'])
+         || !array_key_exists('desc', $arr['reply'])
+         || !array_key_exists('data', $arr['reply'])
+        ) {
             throw new OP_API_Exception(sprintf("Could not interpret response, missing mandatory fields. Response: %s", print_r($arr, true)));
         }
 
