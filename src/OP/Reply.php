@@ -20,8 +20,12 @@ class OP_Reply
     protected function _parseReply ($str = '')
     {
         $dom = new DOMDocument;
+
+        libxml_use_internal_errors(true);
         $result = $dom->loadXML(trim($str));
-        if (!$result) {
+        libxml_clear_errors();
+
+        if ($result === false) {
             error_log("Cannot parse xml: '$str'");
         }
 
